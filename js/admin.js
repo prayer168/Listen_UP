@@ -15,12 +15,14 @@ const loginBtn        = $('login-btn');
 const logoutBtn       = $('logout-btn');
 const userInfo        = $('user-info');
 const addForm         = $('add-form');
+const addCatForm      = $('add-cat-form');
 const phraseTableBody = $('phrase-table-body');
+const catTableBody    = $('cat-table-body');
 const statusMsg       = $('status-msg');
 const seedBtn         = $('seed-btn');
 const addCatSel       = $('add-cat');
 
-const CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   { id: 'before_class',  name: '上課前與進教室',       color: '#3B82F6' },
   { id: 'class_order',   name: '課堂秩序與專心提醒',   color: '#EF4444' },
   { id: 'watching',      name: '觀看影片與聆聽說明',   color: '#8B5CF6' },
@@ -32,12 +34,7 @@ const CATEGORIES = [
 ];
 
 let currentUser = null;
-
-// Populate category select
-CATEGORIES.forEach(c => {
-  addCatSel.innerHTML +=
-    `<option value="${c.id}" data-name="${c.name}" data-color="${c.color}">${c.name}</option>`;
-});
+let allCategories = [...DEFAULT_CATEGORIES];
 
 // ── Status ────────────────────────────────────────────────────────────────────
 function showStatus(msg, type = 'success') {
@@ -46,6 +43,77 @@ function showStatus(msg, type = 'success') {
   statusMsg.style.display = 'block';
   setTimeout(() => { statusMsg.style.display = 'none'; }, 3500);
 }
+
+// ── Category Select ───────────────────────────────────────────────────────────
+function populateCatSelect() {
+  addCatSel.innerHTML = allCategories.map(c =>
+    `<option value="${c.id}" data-name="${c.name}" data-color="${c.color}">${c.name}</option>`
+  ).join('');
+}
+
+// ── Category Table ────────────────────────────────────────────────────────────
+async function loadCategories() {
+  if (!db) return;
+  try {
+    const snap = await getDocs(query(collection(db, 'categories'), orderBy('createdAt')));
+    const custom = snap.docs.map(d => ({ ...d.data(), docId: d.id }));
+    allCategories = [...DEFAULT_CATEGORIES, ...custom];
+    populateCatSelect();
+    renderCatTable(custom);
+  } catch {
+    allCategories = [...DEFAULT_CATEGORIES];
+    populateCatSelect();
+    renderCatTable([]);
+  }
+}
+
+function renderCatTable(customCats) {
+  catTableBody.innerHTML = '';
+
+  DEFAULT_CATEGORIES.forEach(c => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c.color};vertical-align:middle"></span></td>
+      <td><span class="category-badge" style="background:${c.color}18;color:${c.color}">${c.name}</span> <small style="color:#94a3b8">預設</small></td>
+      <td></td>`;
+    catTableBody.appendChild(tr);
+  });
+
+  customCats.forEach(c => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c.color};vertical-align:middle"></span></td>
+      <td><span class="category-badge" style="background:${c.color}18;color:${c.color}">${c.name}</span></td>
+      <td><button class="btn-icon delete" data-id="${c.docId}" title="刪除">🗑️</button></td>`;
+    tr.querySelector('.delete').addEventListener('click', async () => {
+      if (confirm(`確定刪除分類「${c.name}」？`)) {
+        await deleteDoc(doc(db, 'categories', c.docId));
+        showStatus('分類已刪除');
+        loadCategories();
+      }
+    });
+    catTableBody.appendChild(tr);
+  });
+}
+
+// ── Add Category ──────────────────────────────────────────────────────────────
+addCatForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = $('new-cat-name').value.trim();
+  const color = $('new-cat-color').value;
+  if (!name || !db || !currentUser) return;
+  const id = 'custom_' + Date.now();
+  try {
+    await addDoc(collection(db, 'categories'), {
+      id, name, color, createdAt: serverTimestamp(), createdBy: currentUser.email
+    });
+    $('new-cat-name').value = '';
+    showStatus('分類已新增');
+    loadCategories();
+  } catch (e) {
+    showStatus('新增失敗：' + e.message, 'error');
+  }
+});
 
 // ── Phrase Table ──────────────────────────────────────────────────────────────
 async function loadPhrases() {
@@ -64,7 +132,7 @@ async function loadPhrases() {
     phraseTableBody.innerHTML = '';
     snap.docs.forEach(docSnap => {
       const d   = docSnap.data();
-      const cat = CATEGORIES.find(c => c.id === d.categoryId) || { name: d.categoryName, color: '#94a3b8' };
+      const cat = allCategories.find(c => c.id === d.categoryId) || { name: d.categoryName, color: '#94a3b8' };
       const tr  = document.createElement('tr');
       tr.innerHTML = `
         <td>
@@ -170,6 +238,7 @@ function updateUI(user) {
   if (isAdmin) {
     userInfo.textContent = `已登入：${user.displayName || user.email}`;
     logoutBtn.classList.remove('hidden');
+    loadCategories();
     loadPhrases();
   } else {
     logoutBtn.classList.add('hidden');
