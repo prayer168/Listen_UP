@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>教師用語擴放站</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-title">
+      <span>🔊</span>
+      <h1>教師用語擴放站</h1>
+    </div>
+    <nav class="header-nav">
+      <a href="rules.html" class="btn btn-nav">📋 自然教室管理規則</a>
+      <a href="admin.html" class="btn btn-nav">⚙️ 後台管理</a>
+      <span id="user-display" class="user-display"></span>
+      <button id="login-btn"  class="btn btn-outline-header">登入</button>
+      <button id="logout-btn" class="btn btn-outline-header hidden">登出</button>
+    </nav>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-search">
+        <input type="text" id="search-input" placeholder="🔍 搜尋用語…" class="search-input">
+      </div>
+      <div id="phrase-list" class="phrase-list">
+        <div class="loading">載入中…</div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="input-card">
+        <div class="input-card-header">
+          <h2>自訂用語播放</h2>
+          <p>輸入任意文字，按確定後全螢幕顯示並自動朗讀</p>
+        </div>
+        <textarea id="custom-input" class="custom-textarea"
+          placeholder="在此輸入用語…&#10;（Ctrl + Enter 快速確定）"></textarea>
+        <div class="input-actions">
+          <button id="display-btn" class="btn btn-primary">▶ 確定播放</button>
+          <button id="save-btn"    class="btn btn-save hidden">＋ 儲存至列表</button>
+        </div>
+        <p class="input-tip">點擊左側任一用語可直接全螢幕播放</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Fullscreen Overlay -->
+  <div id="fullscreen-overlay" class="fullscreen-overlay hidden">
+    <div class="fullscreen-bg"></div>
+    <div class="fullscreen-content">
+      <div id="fullscreen-category" class="fullscreen-category" style="display:none"></div>
+      <div id="fullscreen-text"     class="fullscreen-text"></div>
+      <div class="fullscreen-hint">點擊畫面重新朗讀　　ESC 關閉</div>
+    </div>
+    <button id="close-btn" class="close-btn" title="關閉（ESC）">✕</button>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
