@@ -25,6 +25,26 @@ const closeBtn      = $('close-btn');
 const loginBtn      = $('login-btn');
 const logoutBtn     = $('logout-btn');
 const userDisplay   = $('user-display');
+const sidebar        = $('sidebar');
+const sidebarOverlay = $('sidebar-overlay');
+const sidebarToggle  = $('sidebar-toggle');
+const sidebarClose   = $('sidebar-close');
+
+// ── Mobile Sidebar ────────────────────────────────────────────────────────────
+function openSidebar() {
+  sidebar?.classList.add('open');
+  sidebarOverlay?.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  sidebar?.classList.remove('open');
+  sidebarOverlay?.classList.remove('open');
+  if (!overlay.classList.contains('hidden')) return;
+  document.body.style.overflow = '';
+}
+sidebarToggle?.addEventListener('click', openSidebar);
+sidebarClose?.addEventListener('click', closeSidebar);
+sidebarOverlay?.addEventListener('click', closeSidebar);
 
 // ── TTS ──────────────────────────────────────────────────────────────────────
 speechSynthesis.addEventListener('voiceschanged', () => {
@@ -74,7 +94,9 @@ function showFullscreen(text, catName = '') {
 
 function hideFullscreen() {
   overlay.classList.add('hidden');
-  document.body.style.overflow = '';
+  if (!sidebar?.classList.contains('open')) {
+    document.body.style.overflow = '';
+  }
   speechSynthesis.cancel();
 }
 
@@ -128,8 +150,10 @@ function renderFiltered(q) {
     });
 
     section.querySelectorAll('.phrase-item').forEach(item =>
-      item.addEventListener('click', () =>
-        showFullscreen(item.dataset.text, item.dataset.cat))
+      item.addEventListener('click', () => {
+        closeSidebar();
+        showFullscreen(item.dataset.text, item.dataset.cat);
+      })
     );
 
     phraseList.appendChild(section);

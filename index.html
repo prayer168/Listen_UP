@@ -9,21 +9,31 @@
 <body>
 
   <header class="header">
-    <div class="header-title">
-      <span>🔊</span>
-      <h1>教師用語播放站</h1>
+    <div class="header-left">
+      <button id="sidebar-toggle" class="btn-sidebar-toggle" aria-label="開啟用語列表">☰</button>
+      <div class="header-title">
+        <span>🔊</span>
+        <h1>教師用語播放站</h1>
+      </div>
     </div>
     <nav class="header-nav">
-      <a href="rules.html" class="btn btn-nav">📋 自然教室管理規則</a>
-      <a href="admin.html" class="btn btn-nav">⚙️ 後台管理</a>
+      <a href="rules.html" class="btn btn-nav">📋 <span class="nav-label">自然教室管理規則</span></a>
+      <a href="admin.html" class="btn btn-nav">⚙️ <span class="nav-label">後台管理</span></a>
       <span id="user-display" class="user-display"></span>
       <button id="login-btn"  class="btn btn-outline-header">登入</button>
       <button id="logout-btn" class="btn btn-outline-header hidden">登出</button>
     </nav>
   </header>
 
+  <!-- Sidebar overlay (mobile) -->
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
   <div class="layout">
-    <aside class="sidebar">
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title">用語列表</span>
+        <button id="sidebar-close" class="btn-sidebar-close" aria-label="關閉">✕</button>
+      </div>
       <div class="sidebar-search">
         <input type="text" id="search-input" placeholder="🔍 搜尋用語…" class="search-input">
       </div>
