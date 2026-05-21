@@ -1,10 +1,10 @@
-# 教師用語擴放站 — 開發流程紀錄
+# 教師用語播放站 — 開發流程紀錄
 
 ## 專案基本資訊
 
 | 項目 | 內容 |
 |------|------|
-| 專案名稱 | 教師用語擴放站（Listen UP） |
+| 專案名稱 | 教師用語播放站（Listen UP） |
 | GitHub Repo | https://github.com/prayer168/Listen_UP |
 | Firebase 專案 | listen-up-8688d |
 | 管理員帳號 | prayer168@gmail.com |
@@ -115,7 +115,7 @@ service cloud.firestore {
 ```bash
 git init
 git add .
-git commit -m "Initial commit: 教師用語擴放站"
+git commit -m "Initial commit: 教師用語播放站"
 gh repo create Listen_UP --public --push
 ```
 
