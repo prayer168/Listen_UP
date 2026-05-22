@@ -10,6 +10,9 @@ const ADMIN_EMAIL = 'prayer168@gmail.com';
 let allCategories = [];
 let currentUser = null;
 let voices = [];
+let isLooping = false;
+let isPaused = false;
+let currentLoopText = '';
 
 // DOM
 const $ = id => document.getElementById(id);
@@ -22,6 +25,8 @@ const overlay       = $('fullscreen-overlay');
 const fullscreenText     = $('fullscreen-text');
 const fullscreenCategory = $('fullscreen-category');
 const closeBtn      = $('close-btn');
+const pauseBtn      = $('pause-btn');
+const continueBtn   = $('continue-btn');
 const loginBtn      = $('login-btn');
 const logoutBtn     = $('logout-btn');
 const userDisplay   = $('user-display');
@@ -53,16 +58,39 @@ speechSynthesis.addEventListener('voiceschanged', () => {
 
 function speak(text) {
   if (!text?.trim()) return;
+  if (isPaused) {
+    isPaused = false;
+    speechSynthesis.resume?.();
+    return;
+  }
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'zh-TW';
   u.rate = 0.85;
   const zhVoice = voices.find(v => v.lang === 'zh-TW' || v.lang.startsWith('zh'));
   if (zhVoice) u.voice = zhVoice;
+
+  u.onend = () => {
+    if (isLooping && !isPaused) {
+      setTimeout(() => speak(currentLoopText), 500);
+    }
+  };
+
   speechSynthesis.speak(u);
+  updateControlButtons();
 }
 
 // ── Fullscreen ────────────────────────────────────────────────────────────────
+function updateControlButtons() {
+  if (isPaused) {
+    pauseBtn?.classList.add('hidden');
+    continueBtn?.classList.remove('hidden');
+  } else {
+    pauseBtn?.classList.remove('hidden');
+    continueBtn?.classList.add('hidden');
+  }
+}
+
 function fitText(el) {
   const maxW = window.innerWidth  * 0.88;
   const maxH = window.innerHeight * 0.70;
@@ -88,6 +116,10 @@ function showFullscreen(text, catName = '') {
   fullscreenCategory.style.display = catName ? '' : 'none';
   overlay.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
+  isLooping = true;
+  isPaused = false;
+  currentLoopText = text;
+  updateControlButtons();
   requestAnimationFrame(() => fitText(fullscreenText));
   speak(text);
 }
@@ -97,6 +129,9 @@ function hideFullscreen() {
   if (!sidebar?.classList.contains('open')) {
     document.body.style.overflow = '';
   }
+  isLooping = false;
+  isPaused = false;
+  currentLoopText = '';
   speechSynthesis.cancel();
 }
 
@@ -285,6 +320,20 @@ overlay.addEventListener('click', e => {
 });
 
 closeBtn.addEventListener('click', e => { e.stopPropagation(); hideFullscreen(); });
+
+pauseBtn?.addEventListener('click', e => {
+  e.stopPropagation();
+  isPaused = true;
+  speechSynthesis.pause?.();
+  updateControlButtons();
+});
+
+continueBtn?.addEventListener('click', e => {
+  e.stopPropagation();
+  isPaused = false;
+  speak(currentLoopText);
+});
+
 document.addEventListener('keydown', e => { if (e.key === 'Escape') hideFullscreen(); });
 searchInput.addEventListener('input', e => renderFiltered(e.target.value));
 
